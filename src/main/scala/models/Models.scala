@@ -13,9 +13,14 @@ import cats.effect.Sync
 
 object Models {
 
-  final case class BaseUrl(baseUrl: String)         extends AnyVal
-  final case class BearerToken(bearerToken: String) extends AnyVal
-  final case class TwitterConfig(baseUrl: BaseUrl, bearerToken: BearerToken)
+  final case class BaseUrl(baseUrl: String)                                 extends AnyVal
+  final case class BearerToken(bearerToken: String)                         extends AnyVal
+  final case class TwitterFollowingBaseUrl(twitterFollowingBaseUrl: String) extends AnyVal
+  final case class TwitterConfig(
+      baseUrl: BaseUrl,
+      bearerToken: BearerToken,
+      twitterFollowingBaseUrl: TwitterFollowingBaseUrl
+  )
 
   final case class Id(id: String) extends AnyVal
   object Id {
@@ -49,5 +54,27 @@ object Models {
       jsonEncoderOf[F, TwitterGetUserByUserNameResponseData]
     implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, TwitterGetUserByUserNameResponseData] =
       jsonOf[F, TwitterGetUserByUserNameResponseData]
+  }
+
+  final case class Ids(ids: Seq[Long]) extends AnyVal
+  object Ids {
+    implicit val encoder: Encoder[Ids] = deriveUnwrappedEncoder[Ids]
+    implicit val decoder: Decoder[Ids] = deriveUnwrappedDecoder[Ids]
+  }
+
+  final case class PreviousCursor(previous_cursor: Int) extends AnyVal
+  object PreviousCursor {
+    implicit val encoder: Encoder[PreviousCursor] = deriveUnwrappedEncoder[PreviousCursor]
+    implicit val decoder: Decoder[PreviousCursor] = deriveUnwrappedDecoder[PreviousCursor]
+  }
+
+  final case class FollowingIds(previous_cursor: PreviousCursor, ids: Ids)
+  object FollowingIds {
+    implicit val encoder: Encoder[FollowingIds] = deriveConfiguredEncoder[FollowingIds]
+    implicit val decoder: Decoder[FollowingIds] = deriveConfiguredDecoder[FollowingIds]
+    implicit def entityEncoder[F[_]: Sync]: EntityEncoder[F, FollowingIds] =
+      jsonEncoderOf[F, FollowingIds]
+    implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, FollowingIds] =
+      jsonOf[F, FollowingIds]
   }
 }

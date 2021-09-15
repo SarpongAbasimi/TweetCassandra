@@ -19,6 +19,7 @@ object Server {
     client <- Stream.eval(logger.info("*** Building Client . . . ***")) *> BlazeClientBuilder[F](
       global
     ).stream
+
     twitterAlgebra <- Stream.eval(Sync[F].delay(TwitterFollowsImp.imp[F](client, twitterConfig)))
 
     appClient: TwitterServiceAlgebra[F] = TwitterService.imp(twitterAlgebra)

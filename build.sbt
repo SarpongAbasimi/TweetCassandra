@@ -20,6 +20,7 @@ val root = (project in file(".")).settings(
     "io.chrisdavenport"     %% "log4cats-slf4j"       % lofForCatsSlf4jVersion,
     "io.circe"              %% "circe-generic-extras" % circeGenericExtraVersion,
     "com.github.pureconfig" %% "pureconfig"           % pureConfigVersion,
-    "com.typesafe"           % "config"               % configVersion
+    "com.typesafe"           % "config"               % configVersion,
+    "io.circe"              %% "circe-literal"        % "0.14.1"
   )
 )

@@ -11,15 +11,23 @@ object Routes {
   def twitterRoutes[F[_]: Sync](twitterService: TwitterServiceAlgebra[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
-    HttpRoutes.of[F] { case GET -> Root / userName =>
-      for {
-        logger              <- Slf4jLogger.create
-        _                   <- logger.info("Making a GET to jsonPlaceHolder ...")
-        twitterResponseData <- twitterService.getUserByUserName(userName)
-        response <- logger.info("Request was successful -> returning response ...") >> Ok(
-          twitterResponseData
-        )
-      } yield response
+    HttpRoutes.of[F] {
+      case GET -> Root / userName =>
+        for {
+          logger              <- Slf4jLogger.create[F]
+          _                   <- logger.info("Making a GET request 🚀 to Twitter 🐦 ...")
+          twitterResponseData <- twitterService.getUserByUserName(userName)
+          response <- logger.info("Request was successful 🎉 -> returning response 💭 ...") >> Ok(
+            twitterResponseData
+          )
+        } yield response
+      case GET -> Root / "following" / userName =>
+        for {
+          logger                 <- Slf4jLogger.create[F]
+          listOfTwitterFollowing <- twitterService.getTheFollowingOfUser(userName)
+          _                      <- logger.info("🚀🚀 Successfully got listOfTwitterFollowing")
+          response               <- Ok(listOfTwitterFollowing)
+        } yield response
     }
   }
 }

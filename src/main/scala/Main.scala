@@ -8,7 +8,7 @@ import fs2.Stream
 object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = (for {
     logger <- Stream.eval(Slf4jLogger.create[IO])
-    twitterConfig <- Stream.eval(logger.info("Loading Twitter config ...")) *> Stream.eval(
+    twitterConfig <- Stream.eval(logger.info("*** Loading Twitter config ... ***")) *> Stream.eval(
       TwitterConfig.getConfig[IO]("conf")
     )
     _     <- Stream.eval(logger.info(s"*** Twitter config loaded ${twitterConfig} ***"))
