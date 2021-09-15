@@ -1,12 +1,12 @@
 package algebrasImplementations
 
 import models.Models.{TwitterConfig, TwitterGetUserByUserNameResponseData}
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.{Headers, Request, Uri}
 import org.http4s.client.Client
 import algebras.TwitterFollows
 import cats.effect.Sync
 import cats.implicits._
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 object TwitterFollowsImp {
   def imp[F[_]: Sync](client: Client[F], twitterConfig: TwitterConfig): TwitterFollows[F] =

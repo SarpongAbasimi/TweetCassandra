@@ -1,11 +1,11 @@
 package http
 
-import cats.effect.Sync
-import org.http4s.HttpRoutes
-import org.http4s.dsl.Http4sDsl
-import cats.implicits._
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import services.TwitterServiceAlgebra
+import org.http4s.dsl.Http4sDsl
+import org.http4s.HttpRoutes
+import cats.effect.Sync
+import cats.implicits._
 
 object Routes {
   def twitterRoutes[F[_]: Sync](twitterService: TwitterServiceAlgebra[F]): HttpRoutes[F] = {

@@ -3,8 +3,8 @@ package conf
 import cats.effect.{Sync}
 import com.typesafe.config.{Config, ConfigFactory}
 import models.Models.TwitterConfig
-import pureconfig.ConfigSource
 import pureconfig.generic.auto._
+import pureconfig.ConfigSource
 import cats.implicits._
 
 object TwitterConfig {

@@ -1,6 +1,4 @@
 package models
-import cats.effect.Sync
-import io.circe.{Decoder, Encoder}
 import org.http4s.{EntityDecoder, EntityEncoder}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import io.circe.generic.extras.defaults._
@@ -10,6 +8,8 @@ import io.circe.generic.extras.semiauto.{
   deriveUnwrappedDecoder,
   deriveUnwrappedEncoder
 }
+import io.circe.{Decoder, Encoder}
+import cats.effect.Sync
 
 object Models {
 
@@ -35,7 +35,7 @@ object Models {
     implicit val decoder: Decoder[UserName] = deriveUnwrappedDecoder[UserName]
   }
 
-  final case class Data(id: Id, name: Name, userName: UserName)
+  final case class Data(id: Id, name: Name, username: UserName)
   object Data {
     implicit val encoder: Encoder[Data] = deriveConfiguredEncoder[Data]
     implicit val decoder: Decoder[Data] = deriveConfiguredDecoder[Data]
@@ -44,7 +44,7 @@ object Models {
   final case class TwitterGetUserByUserNameResponseData(data: Data)
   object TwitterGetUserByUserNameResponseData {
     implicit val encoder: Encoder[TwitterGetUserByUserNameResponseData] = deriveConfiguredEncoder
-    implicit val decoder: Decoder[TwitterGetUserByUserNameResponseData] = deriveUnwrappedDecoder
+    implicit val decoder: Decoder[TwitterGetUserByUserNameResponseData] = deriveConfiguredDecoder
     implicit def entityEncoder[F[_]: Sync]: EntityEncoder[F, TwitterGetUserByUserNameResponseData] =
       jsonEncoderOf[F, TwitterGetUserByUserNameResponseData]
     implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, TwitterGetUserByUserNameResponseData] =
