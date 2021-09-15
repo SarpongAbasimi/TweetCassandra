@@ -1,23 +1,28 @@
 package http
 
-import algebras.JsonPlaceHolderAlgebra
+import algebrasImplementations.TwitterFollowsImp
 import cats.effect.{ConcurrentEffect, ExitCode, Sync, Timer}
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.blaze.server.BlazeServerBuilder
-import fs2.Stream
 
 import scala.concurrent.ExecutionContext.global
+import models.Models.TwitterConfig
 import cats.implicits._
+import fs2.Stream
+import services.{TwitterService, TwitterServiceAlgebra}
 
 object Server {
-  def stream[F[_]: Sync: ConcurrentEffect: Timer]: Stream[F, ExitCode] = for {
+  def stream[F[_]: Sync: ConcurrentEffect: Timer](
+      twitterConfig: TwitterConfig
+  ): Stream[F, ExitCode] = for {
     logger <- Stream.eval(Slf4jLogger.create[F])
-    client <- Stream.eval(logger.info("Building Client . . .")) *> BlazeClientBuilder[F](
+    client <- Stream.eval(logger.info("*** Building Client . . . ***")) *> BlazeClientBuilder[F](
       global
     ).stream
+    twitterAlgebra <- Stream.eval(Sync[F].delay(TwitterFollowsImp.imp[F](client, twitterConfig)))
 
-    appClient: JsonPlaceHolderAlgebra[F] = Client.imp(client)
+    appClient: TwitterServiceAlgebra[F] = TwitterService.imp(twitterAlgebra)
 
     server <- BlazeServerBuilder[F](global)
       .bindHttp(5000, "localhost")

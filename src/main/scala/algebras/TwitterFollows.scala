@@ -1,6 +1,7 @@
 package algebras
 
+import models.Models.TwitterGetUserByUserNameResponseData
+
 trait TwitterFollows[F[_]] {
-  def getAllUserFollowing(user: Int): F[String]
-  def getAllUsersBeingFollowedBy(user: Int): F[String]
+  def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
 }

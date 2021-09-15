@@ -12,24 +12,42 @@ import io.circe.generic.extras.semiauto.{
 }
 
 object Models {
-  final case class UserId(userId: Int) extends AnyVal
-  object UserId {
-    implicit val encoder: Encoder[UserId] = deriveUnwrappedEncoder[UserId]
-    implicit val decoder: Decoder[UserId] = deriveUnwrappedDecoder[UserId]
-  }
-  final case class Title(title: String) extends AnyVal
-  object Title {
-    implicit val encoder: Encoder[Title] = deriveUnwrappedEncoder[Title]
-    implicit val decoder: Decoder[Title] = deriveUnwrappedDecoder[Title]
+
+  final case class BaseUrl(baseUrl: String)         extends AnyVal
+  final case class BearerToken(bearerToken: String) extends AnyVal
+  final case class TwitterConfig(baseUrl: BaseUrl, bearerToken: BearerToken)
+
+  final case class Id(id: String) extends AnyVal
+  object Id {
+    implicit val encoder: Encoder[Id] = deriveUnwrappedEncoder[Id]
+    implicit val decoder: Decoder[Id] = deriveUnwrappedDecoder[Id]
   }
 
-  final case class DummyData(userId: UserId, title: Title)
+  final case class Name(name: String) extends AnyVal
+  object Name {
+    implicit val encoder: Encoder[Name] = deriveUnwrappedEncoder[Name]
+    implicit val decoder: Decoder[Name] = deriveUnwrappedDecoder[Name]
+  }
 
-  object DummyData {
-    implicit val encoder: Encoder[DummyData]                            = deriveConfiguredEncoder[DummyData]
-    implicit val decoder: Decoder[DummyData]                            = deriveConfiguredDecoder[DummyData]
-    implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, DummyData] = jsonOf[F, DummyData]
-    implicit def entityEncoder[F[_]: Sync]: EntityEncoder[F, DummyData] =
-      jsonEncoderOf[F, DummyData]
+  final case class UserName(username: String) extends AnyVal
+  object UserName {
+    implicit val encoder: Encoder[UserName] = deriveUnwrappedEncoder[UserName]
+    implicit val decoder: Decoder[UserName] = deriveUnwrappedDecoder[UserName]
+  }
+
+  final case class Data(id: Id, name: Name, userName: UserName)
+  object Data {
+    implicit val encoder: Encoder[Data] = deriveConfiguredEncoder[Data]
+    implicit val decoder: Decoder[Data] = deriveConfiguredDecoder[Data]
+  }
+
+  final case class TwitterGetUserByUserNameResponseData(data: Data)
+  object TwitterGetUserByUserNameResponseData {
+    implicit val encoder: Encoder[TwitterGetUserByUserNameResponseData] = deriveConfiguredEncoder
+    implicit val decoder: Decoder[TwitterGetUserByUserNameResponseData] = deriveUnwrappedDecoder
+    implicit def entityEncoder[F[_]: Sync]: EntityEncoder[F, TwitterGetUserByUserNameResponseData] =
+      jsonEncoderOf[F, TwitterGetUserByUserNameResponseData]
+    implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, TwitterGetUserByUserNameResponseData] =
+      jsonOf[F, TwitterGetUserByUserNameResponseData]
   }
 }
