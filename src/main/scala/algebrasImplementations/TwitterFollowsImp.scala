@@ -57,7 +57,7 @@ object TwitterFollowsImp {
           maxNumberOfFollowers: Int
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {
         logger <- Slf4jLogger.create[F]
-        _      <- logger.info("*** Getting user details 🌎***")
+        _      <- logger.info("*** Getting user details 🌎 ***")
         user   <- getUserByUserName(userName)
         uri <- Sync[F].fromEither(
           Uri.fromString(

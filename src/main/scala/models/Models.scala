@@ -1,5 +1,6 @@
 package models
-import org.http4s.{EntityDecoder, EntityEncoder}
+import org.http4s.{EntityDecoder, EntityEncoder, QueryParamDecoder}
+import org.http4s.dsl.impl.OptionalQueryParamDecoderMatcher
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import io.circe.generic.extras.defaults._
 import io.circe.generic.extras.semiauto.{
@@ -58,6 +59,15 @@ object Models {
       jsonOf[F, TwitterGetUserByUserNameResponseData]
   }
 
+  final case class OptionalMaxResultQueryParamDecoder(optionalMaxResult: String)
+  object OptionalMaxResultQueryParamDecoder {
+    implicit val decoder: QueryParamDecoder[OptionalMaxResultQueryParamDecoder] =
+      QueryParamDecoder[String].map(OptionalMaxResultQueryParamDecoder(_))
+  }
+
+  object OptionalMaxResultQueryParamMatcher
+      extends OptionalQueryParamDecoderMatcher[OptionalMaxResultQueryParamDecoder]("max_result")
+
   final case class ProfileImageUrl(profile_image_url: String) extends AnyVal
   object ProfileImageUrl {
     implicit val encoder: Encoder[ProfileImageUrl] = deriveUnwrappedEncoder
@@ -76,7 +86,9 @@ object Models {
     implicit val decoder: Decoder[DataWithProfileImageUrl] = deriveConfiguredDecoder
   }
 
-  final case class TwitterGetUserByUserNameResponseDataWithProfileUrl(data: DataWithProfileImageUrl)
+  final case class TwitterGetUserByUserNameResponseDataWithProfileUrl(
+      data: Seq[DataWithProfileImageUrl]
+  )
   object TwitterGetUserByUserNameResponseDataWithProfileUrl {
     implicit val encoder: Encoder[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
       deriveConfiguredEncoder
