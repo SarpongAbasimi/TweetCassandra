@@ -1,6 +1,7 @@
 package algebras
 
 import models.Models.{
+  FollowersIds,
   FollowingIds,
   TwitterGetUserByUserNameResponseData,
   TwitterGetUserByUserNameResponseDataWithProfileUrl
@@ -13,4 +14,5 @@ trait TwitterFollows[F[_]] {
       userName: String,
       maxNumberOfFollowers: Int
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
+  def getIdsOfUsersFollowing(userName: String): F[FollowersIds]
 }

@@ -1,6 +1,7 @@
 package algebrasImplementations
 
 import models.Models.{
+  FollowersIds,
   FollowingIds,
   TwitterConfig,
   TwitterGetUserByUserNameResponseData,
@@ -71,6 +72,25 @@ object TwitterFollowsImp {
             headers = Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
           )
         )
+      } yield response
+
+      def getIdsOfUsersFollowing(userName: String): F[FollowersIds] = for {
+        logger <- Slf4jLogger.create[F]
+        user   <- getUserByUserName(userName)
+        _      <- logger.info(s"😃 Getting all the ids of users following ${userName}")
+        uri <- Sync[F].fromEither(
+          Uri.fromString(
+            s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/" +
+              s"followers/ids.json?screen_name=${user.data.username.username}"
+          )
+        )
+        response <- client.expect[FollowersIds](
+          Request[F](
+            uri = uri,
+            headers = Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
+          )
+        )
+        _ <- logger.info(s"Success 🚀 -> Length of Data : ${response.ids.ids.length}")
       } yield response
     }
 }

@@ -11,6 +11,7 @@ import io.circe.generic.extras.semiauto.{
 }
 import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
+import io.circe.syntax._
 
 object Models {
 
@@ -118,6 +119,12 @@ object Models {
     implicit val decoder: Decoder[PreviousCursor] = deriveUnwrappedDecoder[PreviousCursor]
   }
 
+  final case class NextCursor(next_cursor: Int) extends AnyVal
+  object NextCursor {
+    implicit val encoder: Encoder[NextCursor] = deriveUnwrappedEncoder[NextCursor]
+    implicit val decoder: Decoder[NextCursor] = deriveUnwrappedDecoder[NextCursor]
+  }
+
   final case class FollowingIds(previous_cursor: PreviousCursor, ids: Ids)
   object FollowingIds {
     implicit val encoder: Encoder[FollowingIds] = deriveConfiguredEncoder[FollowingIds]
@@ -126,5 +133,15 @@ object Models {
       jsonEncoderOf[F, FollowingIds]
     implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, FollowingIds] =
       jsonOf[F, FollowingIds]
+  }
+
+  final case class FollowersIds(previous_cursor: PreviousCursor, ids: Ids, next_cursor: NextCursor)
+  object FollowersIds {
+    implicit val encoder: Encoder[FollowersIds] = deriveConfiguredEncoder[FollowersIds]
+    implicit val decoder: Decoder[FollowersIds] = deriveConfiguredDecoder[FollowersIds]
+    implicit def entityEncoder[F[_]: Sync]: EntityEncoder[F, FollowersIds] =
+      jsonEncoderOf[F, FollowersIds]
+    implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, FollowersIds] =
+      jsonOf[F, FollowersIds]
   }
 }
