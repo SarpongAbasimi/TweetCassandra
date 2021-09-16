@@ -32,7 +32,7 @@ object TwitterService {
 
       def getFollowersOfAUser(
           userName: String,
-          maxNumberOfFollowersToReturn: Int = 1000
+          maxNumberOfFollowersToReturn: Int
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
         twitterFollows.getUsersFollowing(userName, maxNumberOfFollowersToReturn)
     }

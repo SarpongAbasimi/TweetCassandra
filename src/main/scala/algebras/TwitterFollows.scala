@@ -11,6 +11,6 @@ trait TwitterFollows[F[_]] {
   def getUsersFollowedBy(userName: String): F[FollowingIds]
   def getUsersFollowing(
       userName: String,
-      maxNumberOfFollowers: Int = 1000
+      maxNumberOfFollowers: Int
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
 }

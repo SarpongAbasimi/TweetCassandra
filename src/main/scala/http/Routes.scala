@@ -24,6 +24,7 @@ object Routes {
             twitterResponseData
           )
         } yield response
+
       case GET -> Root / "following" / userName =>
         for {
           logger                 <- Slf4jLogger.create[F]
@@ -42,8 +43,15 @@ object Routes {
               logger            <- Slf4jLogger.create[F]
               convertValueToInt <- Sync[F].delay(Try(value.optionalMaxResult.toInt))
               result <- convertValueToInt match {
-                case Failure(_)     => BadRequest("Query parameter must be a number")
-                case Success(value) => Ok(twitterService.getFollowersOfAUser(username, value))
+                case Failure(_) => BadRequest("Query parameter must be a number")
+                case Success(value) =>
+                  for {
+                    response <- twitterService.getFollowersOfAUser(username, value)
+                    _ <- logger.info(
+                      s"🐸 The size of data being returned -> ${response.data.length}"
+                    )
+                    res <- Ok(response)
+                  } yield res
               }
               _ <- logger.info("🚀 Successful Request")
             } yield result
