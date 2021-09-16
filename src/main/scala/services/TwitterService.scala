@@ -1,6 +1,10 @@
 package services
 
-import models.Models.{FollowingIds, TwitterGetUserByUserNameResponseData}
+import models.Models.{
+  FollowingIds,
+  TwitterGetUserByUserNameResponseData,
+  TwitterGetUserByUserNameResponseDataWithProfileUrl
+}
 import algebras.TwitterFollows
 import cats.effect.Sync
 import cats.implicits._
@@ -9,6 +13,10 @@ import errors.GetRequestError
 trait TwitterServiceAlgebra[F[_]] {
   def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
   def getTheFollowingOfUser(userName: String): F[FollowingIds]
+  def getFollowersOfAUser(
+      userName: String,
+      maxNumberOfFollowersToReturn: Int
+  ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
 }
 
 object TwitterService {
@@ -21,5 +29,11 @@ object TwitterService {
 
       def getTheFollowingOfUser(userName: String): F[FollowingIds] =
         twitterFollows.getUsersFollowedBy(userName)
+
+      def getFollowersOfAUser(
+          userName: String,
+          maxNumberOfFollowersToReturn: Int = 1000
+      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
+        twitterFollows.getUsersFollowing(userName, maxNumberOfFollowersToReturn)
     }
 }

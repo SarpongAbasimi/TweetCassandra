@@ -1,6 +1,11 @@
 package algebrasImplementations
 
-import models.Models.{FollowingIds, TwitterConfig, TwitterGetUserByUserNameResponseData}
+import models.Models.{
+  FollowingIds,
+  TwitterConfig,
+  TwitterGetUserByUserNameResponseData,
+  TwitterGetUserByUserNameResponseDataWithProfileUrl
+}
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.{Headers, Request, Uri}
 import org.http4s.client.Client
@@ -45,6 +50,27 @@ object TwitterFollowsImp {
                 Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
             )
           )
+      } yield response
+
+      def getUsersFollowing(
+          userName: String,
+          maxNumberOfFollowers: Int
+      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {
+        logger <- Slf4jLogger.create[F]
+        _      <- logger.info("*** Getting user details 🌎***")
+        user   <- getUserByUserName(userName)
+        uri <- Sync[F].fromEither(
+          Uri.fromString(
+            s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}" +
+              s"/${user.data.id.id}/followers?user.fields=profile_image_url&max_results=${maxNumberOfFollowers}"
+          )
+        )
+        response <- client.expect[TwitterGetUserByUserNameResponseDataWithProfileUrl](
+          Request[F](
+            uri = uri,
+            headers = Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
+          )
+        )
       } yield response
     }
 }

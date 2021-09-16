@@ -16,10 +16,12 @@ object Models {
   final case class BaseUrl(baseUrl: String)                                 extends AnyVal
   final case class BearerToken(bearerToken: String)                         extends AnyVal
   final case class TwitterFollowingBaseUrl(twitterFollowingBaseUrl: String) extends AnyVal
+  final case class TwitterFollowersBaseUrl(twitterFollowersBaseUrl: String) extends AnyVal
   final case class TwitterConfig(
       baseUrl: BaseUrl,
       bearerToken: BearerToken,
-      twitterFollowingBaseUrl: TwitterFollowingBaseUrl
+      twitterFollowingBaseUrl: TwitterFollowingBaseUrl,
+      twitterFollowersBaseUrl: TwitterFollowersBaseUrl
   )
 
   final case class Id(id: String) extends AnyVal
@@ -54,6 +56,42 @@ object Models {
       jsonEncoderOf[F, TwitterGetUserByUserNameResponseData]
     implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, TwitterGetUserByUserNameResponseData] =
       jsonOf[F, TwitterGetUserByUserNameResponseData]
+  }
+
+  final case class ProfileImageUrl(profile_image_url: String) extends AnyVal
+  object ProfileImageUrl {
+    implicit val encoder: Encoder[ProfileImageUrl] = deriveUnwrappedEncoder
+    implicit val decoder: Decoder[ProfileImageUrl] = deriveUnwrappedDecoder
+  }
+
+  final case class DataWithProfileImageUrl(
+      id: Id,
+      name: Name,
+      username: UserName,
+      profile_image_url: ProfileImageUrl
+  )
+
+  object DataWithProfileImageUrl {
+    implicit val encoder: Encoder[DataWithProfileImageUrl] = deriveConfiguredEncoder
+    implicit val decoder: Decoder[DataWithProfileImageUrl] = deriveConfiguredDecoder
+  }
+
+  final case class TwitterGetUserByUserNameResponseDataWithProfileUrl(data: DataWithProfileImageUrl)
+  object TwitterGetUserByUserNameResponseDataWithProfileUrl {
+    implicit val encoder: Encoder[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
+      deriveConfiguredEncoder
+    implicit val decoder: Decoder[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
+      deriveConfiguredDecoder
+    implicit def entityEncoder[F[_]: Sync]: EntityEncoder[
+      F,
+      TwitterGetUserByUserNameResponseDataWithProfileUrl
+    ] =
+      jsonEncoderOf[F, TwitterGetUserByUserNameResponseDataWithProfileUrl]
+
+    implicit def entityDecoder[F[_]: Sync]: EntityDecoder[
+      F,
+      TwitterGetUserByUserNameResponseDataWithProfileUrl
+    ] = jsonOf[F, TwitterGetUserByUserNameResponseDataWithProfileUrl]
   }
 
   final case class Ids(ids: Seq[Long]) extends AnyVal
