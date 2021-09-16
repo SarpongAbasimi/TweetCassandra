@@ -56,6 +56,16 @@ object Routes {
               _ <- logger.info("🚀 Successful Request")
             } yield result
         }
+
+      case GET -> Root / "followers" / "ids" / userName =>
+        for {
+          logger                 <- Slf4jLogger.create[F]
+          listOfTwitterFollowing <- twitterService.getTheIdsOfTheFollowersOf(userName)
+          _ <- logger.info("🚀 Successfully got ids of listOfTwitterFollowers") *> logger.info(
+            s"🚀 Number of Ids -> ${listOfTwitterFollowing.ids.ids.length}"
+          )
+          response <- Ok(listOfTwitterFollowing)
+        } yield response
     }
   }
 }

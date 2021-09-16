@@ -11,6 +11,8 @@ import io.circe.generic.extras.semiauto.{
 }
 import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
+import io.circe.Decoder.Result
+import io.circe.literal.JsonStringContext
 import io.circe.syntax._
 
 object Models {
@@ -119,7 +121,7 @@ object Models {
     implicit val decoder: Decoder[PreviousCursor] = deriveUnwrappedDecoder[PreviousCursor]
   }
 
-  final case class NextCursor(next_cursor: Int) extends AnyVal
+  final case class NextCursor(next_cursor: BigInt) extends AnyVal
   object NextCursor {
     implicit val encoder: Encoder[NextCursor] = deriveUnwrappedEncoder[NextCursor]
     implicit val decoder: Decoder[NextCursor] = deriveUnwrappedDecoder[NextCursor]

@@ -80,16 +80,17 @@ object TwitterFollowsImp {
         _      <- logger.info(s"😃 Getting all the ids of users following ${userName}")
         uri <- Sync[F].fromEither(
           Uri.fromString(
-            s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/" +
-              s"followers/ids.json?screen_name=${user.data.username.username}"
+            s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/followers/ids.json?screen_name=${user.data.username.username}"
           )
         )
-        response <- client.expect[FollowersIds](
-          Request[F](
-            uri = uri,
-            headers = Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
+        response <- client
+          .expect[FollowersIds](
+            Request[F](
+              uri = uri,
+              headers =
+                Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
+            )
           )
-        )
         _ <- logger.info(s"Success 🚀 -> Length of Data : ${response.ids.ids.length}")
       } yield response
     }
