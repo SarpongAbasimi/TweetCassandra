@@ -13,7 +13,6 @@ import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
 
 object Models {
-  sealed trait TwitterModels extends Product with Serializable
 
   final case class BaseUrl(baseUrl: String)                                 extends AnyVal
   final case class BearerToken(bearerToken: String)                         extends AnyVal
