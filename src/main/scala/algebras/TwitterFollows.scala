@@ -17,5 +17,7 @@ trait TwitterFollows[F[_]] {
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
   def getIdsOfUsersFollowing(userName: String): F[FollowersIds]
   def getUnFollowersOf(userName: String): Stream[F, Long]
-  def getUnFollowersDetailsFor[A](userName: String): F[A]
+  def getUnFollowersDetailsFor(
+      userName: String
+  ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
 }

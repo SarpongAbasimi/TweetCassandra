@@ -20,6 +20,7 @@ trait TwitterServiceAlgebra[F[_]] {
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
   def getTheIdsOfTheFollowersOf(userName: String): F[FollowersIds]
   def getUnFollowers(userName: String): F[List[Long]]
+  def getUnFollowersDetails(userName: String): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
 }
 
 object TwitterService {
@@ -44,5 +45,10 @@ object TwitterService {
 
       def getUnFollowers(userName: String): F[List[Long]] =
         twitterFollows.getUnFollowersOf(userName).compile.toList
+
+      def getUnFollowersDetails(
+          userName: String
+      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
+        twitterFollows.getUnFollowersDetailsFor(userName).adaptError(GetRequestError(_))
     }
 }

@@ -5,8 +5,7 @@ import models.Models.{
   FollowingIds,
   TwitterConfig,
   TwitterGetUserByUserNameResponseData,
-  TwitterGetUserByUserNameResponseDataWithProfileUrl,
-  TwitterModels
+  TwitterGetUserByUserNameResponseDataWithProfileUrl
 }
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.{EntityDecoder, Headers, Request, Uri}
@@ -121,7 +120,7 @@ object TwitterFollowsImp {
           .filterNot(ids => idsOfUsersFollowing.contains(ids))
       } yield response
 
-      def getUnFollowersDetailsFor[TwitterGetUserByUserNameResponseDataWithProfileUrl](
+      def getUnFollowersDetailsFor(
           userName: String
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = {
         for {
