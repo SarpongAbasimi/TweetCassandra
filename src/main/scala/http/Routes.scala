@@ -8,7 +8,6 @@ import cats.effect.Sync
 import cats.implicits._
 import models.Models.OptionalMaxResultQueryParamMatcher
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-
 import scala.util.{Failure, Success, Try}
 
 object Routes {
@@ -16,7 +15,7 @@ object Routes {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
-      case GET -> Root / "user" / userName =>
+      case GET -> Root / "twitter" / "user" / userName =>
         for {
           logger              <- Slf4jLogger.create[F]
           _                   <- logger.info("Making a GET request 🚀 to Twitter 🐦 ...")
@@ -26,7 +25,7 @@ object Routes {
           )
         } yield response
 
-      case GET -> Root / "following" / userName =>
+      case GET -> Root / "twitter" / "following" / userName =>
         for {
           logger                 <- Slf4jLogger.create[F]
           listOfTwitterFollowing <- twitterService.getTheFollowingOfUser(userName)
@@ -36,9 +35,15 @@ object Routes {
           response <- Ok(listOfTwitterFollowing)
         } yield response
 
-      case GET -> Root / "followers" / username :? OptionalMaxResultQueryParamMatcher(maxResult) =>
+      case GET -> Root / "twitter" / "followers" / username :? OptionalMaxResultQueryParamMatcher(
+            maxResult
+          ) =>
         maxResult match {
-          case None => BadRequest("Sorry Something went wrong 😕")
+          case None =>
+            BadRequest(
+              "Sorry Something went wrong 😕. " +
+                "Add ?max_result=10 to the end of url 😉"
+            )
           case Some(value) =>
             for {
               logger            <- Slf4jLogger.create[F]
@@ -58,7 +63,7 @@ object Routes {
             } yield result
         }
 
-      case GET -> Root / "followers" / "ids" / userName =>
+      case GET -> Root / "twitter" / "followers" / "ids" / userName =>
         for {
           logger                 <- Slf4jLogger.create[F]
           listOfTwitterFollowing <- twitterService.getTheIdsOfTheFollowersOf(userName)
@@ -68,9 +73,11 @@ object Routes {
           response <- Ok(listOfTwitterFollowing)
         } yield response
 
-      case GET -> Root / "unfollowers" / userName =>
+      case GET -> Root / "twitter" / "unfollowers" / userName =>
         for {
+          logger    <- Slf4jLogger.create[F]
           listOfIds <- twitterService.getUnFollowers(userName)
+          _         <- logger.info("Getting list of unFollowers 🤦🏿‍♂️")
           response  <- Ok(listOfIds)
         } yield response
     }

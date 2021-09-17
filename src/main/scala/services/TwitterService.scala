@@ -10,7 +10,6 @@ import algebras.TwitterFollows
 import cats.effect.Sync
 import cats.implicits._
 import errors.GetRequestError
-import fs2.Stream
 
 trait TwitterServiceAlgebra[F[_]] {
   def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
