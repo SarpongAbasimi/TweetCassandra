@@ -8,7 +8,7 @@ import models.Models.{
   TwitterGetUserByUserNameResponseDataWithProfileUrl
 }
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import org.http4s.{Headers, Request, Uri}
+import org.http4s.{EntityDecoder, Headers, Request, Uri}
 import org.http4s.client.Client
 import algebras.TwitterFollows
 import cats.effect.Sync
@@ -97,7 +97,7 @@ object TwitterFollowsImp {
 
       def getUnFollowersOf(userName: String): Stream[F, Long] = for {
         logger <- Stream.eval(Slf4jLogger.create[F])
-        _      <- Stream.eval(logger.info(s"Getting list of UnFollowers for ${userName}"))
+        _      <- Stream.eval(logger.info(s"😝 Getting list of UnFollowers for ${userName}"))
         idsOfUsersFollowed <- Stream
           .eval(getUsersFollowedBy(userName))
           .evalTap(data =>
@@ -119,5 +119,39 @@ object TwitterFollowsImp {
           .covary[F]
           .filterNot(ids => idsOfUsersFollowing.contains(ids))
       } yield response
+
+      def getUnFollowersDetailsFor(
+          userName: String
+      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = {
+        for {
+          logger               <- Slf4jLogger.create[F]
+          _                    <- logger.info("💭 💭 Getting details for unFollowers")
+          listOfUnFollowersIds <- getUnFollowersOf(userName).compile.toList
+          url <- logger.info("(^Building Url^)") >> Sync[F].delay(
+            s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}?user.fields=profile_image_url&ids=${listOfUnFollowersIds
+              .mkString(",")}"
+          )
+          response <- clientResponseDataForType[TwitterGetUserByUserNameResponseDataWithProfileUrl](
+            url
+          )
+
+        } yield response
+      }
+
+      private def clientResponseDataForType[T](
+          url: String
+      )(implicit entityDecoder: EntityDecoder[F, T]): F[T] = {
+        for {
+          uri <- Sync[F].fromEither(Uri.fromString(url))
+          response <- client
+            .expect[T](
+              Request[F](
+                uri = uri,
+                headers =
+                  Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
+              )
+            )
+        } yield response
+      }
     }
 }

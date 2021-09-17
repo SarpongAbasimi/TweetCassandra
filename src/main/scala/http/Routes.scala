@@ -80,6 +80,13 @@ object Routes {
           _         <- logger.info("Getting list of unFollowers 🤦🏿‍♂️")
           response  <- Ok(listOfIds)
         } yield response
+
+      case GET -> Root / "twitter" / "unfollowers" / "details" / username =>
+        for {
+          logger   <- Slf4jLogger.create[F]
+          _        <- logger.info("Getting details of all unFollowers 🤙🏿 🚀 ⭐️ ")
+          response <- Ok(twitterService.getUnFollowersDetails(username))
+        } yield response
     }
   }
 }

@@ -11,9 +11,6 @@ import io.circe.generic.extras.semiauto.{
 }
 import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
-import io.circe.Decoder.Result
-import io.circe.literal.JsonStringContext
-import io.circe.syntax._
 
 object Models {
 

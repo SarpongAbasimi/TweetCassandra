@@ -13,7 +13,7 @@ object Main extends IOApp {
         TwitterConfig.getConfig[IO]("conf")
       )
     _     <- Stream.eval(logger.info(s"*** Twitter config loaded 🎉 ${twitterConfig} ***"))
-    _     <- Stream.eval(logger.info("*** Starting Twitter Cassandra Server 🤙🏿🚀 . . . ***"))
+    _     <- Stream.eval(logger.info("*** Starting Twitter Cassandra Server 🤙🏿 🚀 . . . ***"))
     serve <- Server.stream[IO](twitterConfig)
   } yield serve).compile.drain.as(ExitCode.Success)
 }
