@@ -6,6 +6,7 @@ import models.Models.{
   TwitterGetUserByUserNameResponseData,
   TwitterGetUserByUserNameResponseDataWithProfileUrl
 }
+import fs2.Stream
 
 trait TwitterFollows[F[_]] {
   def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
@@ -15,4 +16,5 @@ trait TwitterFollows[F[_]] {
       maxNumberOfFollowers: Int
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
   def getIdsOfUsersFollowing(userName: String): F[FollowersIds]
+  def getUnFollowersOf(userName: String): Stream[F, Long]
 }

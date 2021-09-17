@@ -7,6 +7,7 @@ import org.http4s.HttpRoutes
 import cats.effect.Sync
 import cats.implicits._
 import models.Models.OptionalMaxResultQueryParamMatcher
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 
 import scala.util.{Failure, Success, Try}
 
@@ -65,6 +66,12 @@ object Routes {
             s"🚀 Number of Ids -> ${listOfTwitterFollowing.ids.ids.length}"
           )
           response <- Ok(listOfTwitterFollowing)
+        } yield response
+
+      case GET -> Root / "unfollowers" / userName =>
+        for {
+          listOfIds <- twitterService.getUnFollowers(userName)
+          response  <- Ok(listOfIds)
         } yield response
     }
   }

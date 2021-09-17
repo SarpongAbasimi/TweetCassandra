@@ -13,6 +13,7 @@ import org.http4s.client.Client
 import algebras.TwitterFollows
 import cats.effect.Sync
 import cats.implicits._
+import fs2.Stream
 
 object TwitterFollowsImp {
   def imp[F[_]: Sync](client: Client[F], twitterConfig: TwitterConfig): TwitterFollows[F] =
@@ -92,6 +93,31 @@ object TwitterFollowsImp {
             )
           )
         _ <- logger.info(s"Success 🚀 -> Length of Data : ${response.ids.ids.length}")
+      } yield response
+
+      def getUnFollowersOf(userName: String): Stream[F, Long] = for {
+        logger <- Stream.eval(Slf4jLogger.create[F])
+        _      <- Stream.eval(logger.info(s"Getting list of UnFollowers for ${userName}"))
+        idsOfUsersFollowed <- Stream
+          .eval(getUsersFollowedBy(userName))
+          .evalTap(data =>
+            logger.info(
+              s"1️⃣ Length of user Ids followed by ${userName} is ${data.ids.ids.length}"
+            )
+          )
+          .map(_.ids.ids)
+        idsOfUsersFollowing <- Stream
+          .eval(getIdsOfUsersFollowing(userName))
+          .evalTap(data =>
+            logger.info(
+              s"2️⃣ Length of user Ids following ${userName} is ${data.ids.ids.length}"
+            )
+          )
+          .map(_.ids.ids)
+        response <- Stream
+          .emits(idsOfUsersFollowed)
+          .covary[F]
+          .filterNot(ids => idsOfUsersFollowing.contains(ids))
       } yield response
     }
 }

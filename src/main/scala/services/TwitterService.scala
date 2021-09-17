@@ -10,6 +10,7 @@ import algebras.TwitterFollows
 import cats.effect.Sync
 import cats.implicits._
 import errors.GetRequestError
+import fs2.Stream
 
 trait TwitterServiceAlgebra[F[_]] {
   def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
@@ -19,6 +20,7 @@ trait TwitterServiceAlgebra[F[_]] {
       maxNumberOfFollowersToReturn: Int
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
   def getTheIdsOfTheFollowersOf(userName: String): F[FollowersIds]
+  def getUnFollowers(userName: String): F[List[Long]]
 }
 
 object TwitterService {
@@ -40,5 +42,8 @@ object TwitterService {
 
       def getTheIdsOfTheFollowersOf(userName: String): F[FollowersIds] =
         twitterFollows.getIdsOfUsersFollowing(userName).adaptError(GetRequestError(_))
+
+      def getUnFollowers(userName: String): F[List[Long]] =
+        twitterFollows.getUnFollowersOf(userName).compile.toList
     }
 }
