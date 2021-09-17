@@ -11,11 +11,9 @@ import io.circe.generic.extras.semiauto.{
 }
 import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
-import io.circe.Decoder.Result
-import io.circe.literal.JsonStringContext
-import io.circe.syntax._
 
 object Models {
+  sealed trait TwitterModels extends Product with Serializable
 
   final case class BaseUrl(baseUrl: String)                                 extends AnyVal
   final case class BearerToken(bearerToken: String)                         extends AnyVal
