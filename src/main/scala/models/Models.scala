@@ -11,6 +11,7 @@ import io.circe.generic.extras.semiauto.{
 }
 import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
+import java.util.UUID
 
 object Models {
 
@@ -143,4 +144,16 @@ object Models {
     implicit def entityDecoder[F[_]: Sync]: EntityDecoder[F, FollowersIds] =
       jsonOf[F, FollowersIds]
   }
+
+  /** Cassandra Table Schema * */
+  /**
+   * *
+   *  case class UnFollowers(
+   *      id: UUID,
+   *      name: String,
+   *      userName: String,
+   *      url: String
+   *  )
+   * *
+   */
 }
