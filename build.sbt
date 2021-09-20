@@ -8,7 +8,7 @@ val circeGenericExtraVersion = "0.14.1"
 val pureConfigVersion        = "0.16.0"
 val configVersion            = "1.4.1"
 val circeLiteralVersion      = "0.14.1"
-val phantomDslVersion        = "2.50.0"
+val phantomDslVersion        = "2.59.0"
 
 val root = (project in file(".")).settings(
   name := "twitterCassandra",
@@ -23,7 +23,7 @@ val root = (project in file(".")).settings(
     "io.circe"              %% "circe-generic-extras" % circeGenericExtraVersion,
     "com.github.pureconfig" %% "pureconfig"           % pureConfigVersion,
     "com.typesafe"           % "config"               % configVersion,
-    "io.circe"              %% "circe-literal"        % circeLiteralVersion
-//    "com.outworkers"        %% "phantom-dsl"          % phantomDslVersion
+    "io.circe"              %% "circe-literal"        % circeLiteralVersion,
+    "com.outworkers"        %% "phantom-dsl"          % phantomDslVersion
   )
 )

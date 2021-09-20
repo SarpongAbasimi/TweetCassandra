@@ -145,15 +145,11 @@ object Models {
       jsonOf[F, FollowersIds]
   }
 
-  /** Cassandra Table Schema * */
-  /**
-   * *
-   *  case class UnFollowers(
-   *      id: UUID,
-   *      name: String,
-   *      userName: String,
-   *      url: String
-   *  )
-   * *
-   */
+  case class UnFollowers(
+      id: UUID,
+      name: String,
+      userName: String,
+      url: String
+  )
+
 }
