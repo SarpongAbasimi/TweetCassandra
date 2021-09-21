@@ -15,7 +15,7 @@ abstract class UnFollowersTable extends Table[UnFollowersTable, UnFollowers] {
 }
 
 abstract class UnFollowersQueries[F[_]: Sync] extends UnFollowersTable {
-  def store(
+  def storeUnFollowers(
       data: DataWithProfileImageUrl
   ): F[InsertQuery.Default[UnFollowersTable, UnFollowers]] =
     Sync[F].delay {

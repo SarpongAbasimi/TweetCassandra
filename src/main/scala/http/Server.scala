@@ -9,11 +9,13 @@ import algebrasImplementations.TwitterFollowsImp
 import scala.concurrent.ExecutionContext.global
 import models.Models.TwitterConfig
 import cats.implicits._
+import database.db.UnFollowersDataBase
 import fs2.Stream
 
 object Server {
   def stream[F[_]: Sync: ConcurrentEffect: Timer](
-      twitterConfig: TwitterConfig
+      twitterConfig: TwitterConfig,
+      unFollowDataBase: UnFollowersDataBase[F]
   ): Stream[F, ExitCode] = for {
     logger <- Stream.eval(Slf4jLogger.create[F])
     client <- Stream.eval(logger.info("*** Building Client . . . ***")) *> BlazeClientBuilder[F](
@@ -22,7 +24,7 @@ object Server {
 
     twitterAlgebra <- Stream.eval(Sync[F].delay(TwitterFollowsImp.imp[F](client, twitterConfig)))
 
-    appClient: TwitterServiceAlgebra[F] = TwitterService.imp(twitterAlgebra)
+    appClient: TwitterServiceAlgebra[F] = TwitterService.imp(twitterAlgebra, unFollowDataBase)
 
     server <- BlazeServerBuilder[F](global)
       .bindHttp(5000, "localhost")

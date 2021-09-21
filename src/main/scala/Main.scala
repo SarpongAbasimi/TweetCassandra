@@ -1,7 +1,9 @@
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import cats.effect.{ExitCode, IO, IOApp}
-import conf.TwitterConfig
+import conf.{CassandraConfig, TwitterConfig}
 import cats.implicits._
+import database.connection.DbConnection
+import database.db.UnFollowersDataBase
 import http.Server
 import fs2.Stream
 
@@ -12,8 +14,12 @@ object Main extends IOApp {
       .eval(
         TwitterConfig.getConfig[IO]("conf")
       )
-    _     <- Stream.eval(logger.info(s"*** Twitter config loaded 🎉 ${twitterConfig} ***"))
-    _     <- Stream.eval(logger.info("*** Starting Twitter Cassandra Server 🤙🏿 🚀 . . . ***"))
-    serve <- Server.stream[IO](twitterConfig)
+    cassandraConf <- Stream.eval(CassandraConfig.getConfig[IO]("cassandra"))
+    connection    <- Stream.resource(DbConnection.connection[IO](cassandraConf))
+    db            <- Stream.eval(IO(new UnFollowersDataBase[IO](connection)))
+    _             <- Stream.eval(IO(db.twitterUnFollowers))
+    _             <- Stream.eval(logger.info(s"*** Twitter config loaded 🎉 ${twitterConfig} ***"))
+    _             <- Stream.eval(logger.info("*** Starting Twitter Cassandra Server 🤙🏿 🚀 . . . ***"))
+    serve         <- Server.stream[IO](twitterConfig, db)
   } yield serve).compile.drain.as(ExitCode.Success)
 }

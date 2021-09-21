@@ -152,4 +152,8 @@ object Models {
       url: String
   )
 
+  final case class CassandraKeySpace(keySpace: String) extends AnyVal
+  final case class CassandraPort(port: Int)            extends AnyVal
+  case class CassandraConfig(keySpace: CassandraKeySpace, port: CassandraPort)
+
 }

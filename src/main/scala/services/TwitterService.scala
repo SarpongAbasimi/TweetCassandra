@@ -9,6 +9,7 @@ import models.Models.{
 import algebras.TwitterFollows
 import cats.effect.Sync
 import cats.implicits._
+import database.db.UnFollowersDataBase
 import errors.GetRequestError
 
 trait TwitterServiceAlgebra[F[_]] {
@@ -24,7 +25,10 @@ trait TwitterServiceAlgebra[F[_]] {
 }
 
 object TwitterService {
-  def imp[F[_]: Sync](twitterFollows: TwitterFollows[F]): TwitterServiceAlgebra[F] =
+  def imp[F[_]: Sync](
+      twitterFollows: TwitterFollows[F],
+      unFollowDataBase: UnFollowersDataBase[F]
+  ): TwitterServiceAlgebra[F] =
     new TwitterServiceAlgebra[F] {
       def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData] =
         twitterFollows
@@ -46,9 +50,21 @@ object TwitterService {
       def getUnFollowers(userName: String): F[List[Long]] =
         twitterFollows.getUnFollowersOf(userName).compile.toList
 
+//      def getUnFollowersDetails(
+//          userName: String
+//      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
+//        twitterFollows.getUnFollowersDetailsFor(userName).adaptError(GetRequestError(_))
+
       def getUnFollowersDetails(
           userName: String
-      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
-        twitterFollows.getUnFollowersDetailsFor(userName).adaptError(GetRequestError(_))
+      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {
+        unFollowersDetails <- twitterFollows
+          .getUnFollowersDetailsFor(userName)
+          .adaptError(GetRequestError(_))
+        _ <- unFollowersDetails.data.traverse(
+          unFollowDataBase.twitterUnFollowers
+            .storeUnFollowers(_)
+        )
+      } yield unFollowersDetails
     }
 }
