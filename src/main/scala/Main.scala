@@ -3,7 +3,7 @@ import cats.effect.{ExitCode, IO, IOApp}
 import conf.{CassandraConfig, TwitterConfig}
 import cats.implicits._
 import database.connection.DbConnection
-import database.db.UnFollowersDataBase
+import database.db.{UnFollowersDataBase}
 import http.Server
 import fs2.Stream
 
