@@ -50,11 +50,6 @@ object TwitterService {
       def getUnFollowers(userName: String): F[List[Long]] =
         twitterFollows.getUnFollowersOf(userName).compile.toList
 
-//      def getUnFollowersDetails(
-//          userName: String
-//      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
-//        twitterFollows.getUnFollowersDetailsFor(userName).adaptError(GetRequestError(_))
-
       def getUnFollowersDetails(
           userName: String
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {

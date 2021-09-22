@@ -23,15 +23,8 @@ object TwitterFollowsImp {
         _ <- logger.info(
           s"*** Request Url -> ${twitterConfig.baseUrl.baseUrl} and user -> ${userName} ***"
         )
-        uri <- Sync[F].fromEither(Uri.fromString(s"${twitterConfig.baseUrl.baseUrl}/${userName}"))
-        response <- client
-          .expect[TwitterGetUserByUserNameResponseData](
-            Request[F](
-              uri = uri,
-              headers =
-                Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
-            )
-          )
+        url      <- Sync[F].pure(s"${twitterConfig.baseUrl.baseUrl}/${userName}")
+        response <- clientResponseDataForType[TwitterGetUserByUserNameResponseData](url)
       } yield response
 
       def getUsersFollowedBy(userName: String): F[FollowingIds] = for {
@@ -39,19 +32,10 @@ object TwitterFollowsImp {
         _           <- logger.info(s"*** Request to get user details for ${userName} ***")
         userDetails <- getUserByUserName(userName)
         _           <- logger.info("**** Making request to retrieve followings on Twitter ***")
-        uri <- Sync[F].fromEither(
-          Uri.fromString(
-            s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/friends/ids.json?screen_name=${userDetails.data.username.username}"
-          )
+        url <- Sync[F].pure(
+          s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/friends/ids.json?screen_name=${userDetails.data.username.username}"
         )
-        response <- client
-          .expect[FollowingIds](
-            Request[F](
-              uri = uri,
-              headers =
-                Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
-            )
-          )
+        response <- clientResponseDataForType[FollowingIds](url)
       } yield response
 
       def getUsersFollowing(
@@ -61,17 +45,12 @@ object TwitterFollowsImp {
         logger <- Slf4jLogger.create[F]
         _      <- logger.info("*** Getting user details 🌎 ***")
         user   <- getUserByUserName(userName)
-        uri <- Sync[F].fromEither(
-          Uri.fromString(
-            s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}" +
-              s"/${user.data.id.id}/followers?user.fields=profile_image_url&max_results=${maxNumberOfFollowers}"
-          )
+        url <- Sync[F].pure(
+          s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}" +
+            s"/${user.data.id.id}/followers?user.fields=profile_image_url&max_results=${maxNumberOfFollowers}"
         )
-        response <- client.expect[TwitterGetUserByUserNameResponseDataWithProfileUrl](
-          Request[F](
-            uri = uri,
-            headers = Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
-          )
+        response <- clientResponseDataForType[TwitterGetUserByUserNameResponseDataWithProfileUrl](
+          url
         )
       } yield response
 
@@ -79,20 +58,11 @@ object TwitterFollowsImp {
         logger <- Slf4jLogger.create[F]
         user   <- getUserByUserName(userName)
         _      <- logger.info(s"😃 Getting all the ids of users following ${userName}")
-        uri <- Sync[F].fromEither(
-          Uri.fromString(
-            s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/followers/ids.json?screen_name=${user.data.username.username}"
-          )
+        url <- Sync[F].pure(
+          s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}/followers/ids.json?screen_name=${user.data.username.username}"
         )
-        response <- client
-          .expect[FollowersIds](
-            Request[F](
-              uri = uri,
-              headers =
-                Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
-            )
-          )
-        _ <- logger.info(s"Success 🚀 -> Length of Data : ${response.ids.ids.length}")
+        response <- clientResponseDataForType[FollowersIds](url)
+        _        <- logger.info(s"Success 🚀 -> Length of Data : ${response.ids.ids.length}")
       } yield response
 
       def getUnFollowersOf(userName: String): Stream[F, Long] = for {
@@ -127,7 +97,7 @@ object TwitterFollowsImp {
           logger               <- Slf4jLogger.create[F]
           _                    <- logger.info("💭 💭 Getting details for unFollowers")
           listOfUnFollowersIds <- getUnFollowersOf(userName).compile.toList
-          url <- logger.info("(^Building Url^)") >> Sync[F].delay(
+          url <- logger.info("(^Building Url^)") >> Sync[F].pure(
             s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}?user.fields=profile_image_url&ids=${listOfUnFollowersIds
               .mkString(",")}"
           )
