@@ -56,9 +56,9 @@ object TwitterService {
         unFollowersDetails <- twitterFollows
           .getUnFollowersDetailsFor(userName)
           .adaptError(GetRequestError(_))
-        _ <- unFollowersDetails.data.traverse(
+        _ <- unFollowersDetails.data.traverse(data =>
           unFollowDataBase.twitterUnFollowers
-            .storeUnFollowers(_)
+            .storeUnFollowers(data)
         )
       } yield unFollowersDetails
     }

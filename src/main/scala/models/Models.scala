@@ -11,7 +11,6 @@ import io.circe.generic.extras.semiauto.{
 }
 import io.circe.{Decoder, Encoder}
 import cats.effect.Sync
-import java.util.UUID
 
 object Models {
 
@@ -146,7 +145,7 @@ object Models {
   }
 
   case class UnFollowers(
-      id: UUID,
+      id: String,
       name: String,
       userName: String,
       url: String

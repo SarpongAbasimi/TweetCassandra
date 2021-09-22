@@ -1,13 +1,12 @@
 package database.tables
 
-import cats.effect.Sync
-import com.datastax.driver.core.ConsistencyLevel
-import com.outworkers.phantom.builder.Specified
-import com.outworkers.phantom.builder.query.InsertQuery
-import com.outworkers.phantom.dsl.Table
-import com.outworkers.phantom.keys.PartitionKey
 import models.Models.{DataWithProfileImageUrl, UnFollowers}
-import shapeless.HNil
+import com.datastax.driver.core.ConsistencyLevel
+import com.outworkers.phantom.keys.PartitionKey
+import com.outworkers.phantom.dsl.{Table}
+import com.outworkers.phantom.dsl._
+import scala.concurrent.Future
+import cats.effect.{Sync}
 
 abstract class UnFollowersTable extends Table[UnFollowersTable, UnFollowers] {
   object id       extends StringColumn with PartitionKey
@@ -20,7 +19,7 @@ abstract class UnFollowersTable extends Table[UnFollowersTable, UnFollowers] {
 abstract class UnFollowersQueries[F[_]: Sync] extends UnFollowersTable {
   def storeUnFollowers(
       data: DataWithProfileImageUrl
-  ): F[InsertQuery[UnFollowersTable, UnFollowers, Specified, HNil]] =
+  ): F[Future[ResultSet]] =
     Sync[F].delay {
       insert()
         .value[String](_.id, data.id.id)
@@ -28,5 +27,6 @@ abstract class UnFollowersQueries[F[_]: Sync] extends UnFollowersTable {
         .value[String](_.name, data.name.name)
         .value[String](_.userName, data.username.username)
         .consistencyLevel_=(ConsistencyLevel.ONE)
+        .future()
     }
 }
