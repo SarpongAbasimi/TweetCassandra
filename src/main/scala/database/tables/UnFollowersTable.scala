@@ -26,7 +26,7 @@ abstract class UnFollowersQueries[F[_]: Sync] extends UnFollowersTable {
         .value[String](_.url, data.profile_image_url.profile_image_url)
         .value[String](_.name, data.name.name)
         .value[String](_.userName, data.username.username)
-        .consistencyLevel_=(ConsistencyLevel.ONE)
+        .consistencyLevel_=(ConsistencyLevel.QUORUM)
         .future()
     }
 }
