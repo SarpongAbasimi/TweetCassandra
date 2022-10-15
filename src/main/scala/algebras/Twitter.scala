@@ -8,8 +8,8 @@ import models.Models.{
 }
 import fs2.Stream
 
-trait TwitterFollows[F[_]] {
-  def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
+trait Twitter[F[_]] {
+  def getUserBy(userName: String): F[TwitterGetUserByUserNameResponseData]
   def getUsersFollowedBy(userName: String): F[FollowingIds]
   def getUsersFollowing(
       userName: String,

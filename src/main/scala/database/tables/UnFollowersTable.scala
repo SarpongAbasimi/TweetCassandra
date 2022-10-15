@@ -23,7 +23,7 @@ abstract class UnFollowersQueries[F[_]: Sync] extends UnFollowersTable {
     Sync[F].delay {
       insert()
         .value[String](_.id, data.id.id)
-        .value[String](_.url, data.profile_image_url.profile_image_url)
+//        .value[String](_.url, data.profile_image_url.profile_image_url)
         .value[String](_.name, data.name.name)
         .value[String](_.userName, data.username.username)
         .consistencyLevel_=(ConsistencyLevel.QUORUM)

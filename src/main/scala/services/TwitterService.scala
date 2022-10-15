@@ -6,7 +6,7 @@ import models.Models.{
   TwitterGetUserByUserNameResponseData,
   TwitterGetUserByUserNameResponseDataWithProfileUrl
 }
-import algebras.TwitterFollows
+import algebras.Twitter
 import cats.effect.Sync
 import cats.implicits._
 import database.db.UnFollowersDataBase
@@ -26,17 +26,29 @@ trait TwitterServiceAlgebra[F[_]] {
 
 object TwitterService {
   def imp[F[_]: Sync](
-      twitterFollows: TwitterFollows[F],
+      twitterFollows: Twitter[F],
       unFollowDataBase: UnFollowersDataBase[F]
   ): TwitterServiceAlgebra[F] =
     new TwitterServiceAlgebra[F] {
       def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData] =
         twitterFollows
-          .getUserByUserName(userName)
-          .adaptError(GetRequestError(_))
+          .getUserBy(userName)
+          .adaptError(error =>
+            GetRequestError(
+              "An error occurred whiles getting username",
+              error
+            )
+          )
 
       def getTheFollowingOfUser(userName: String): F[FollowingIds] =
-        twitterFollows.getUsersFollowedBy(userName).adaptError(GetRequestError(_))
+        twitterFollows
+          .getUsersFollowedBy(userName)
+          .adaptError(error =>
+            GetRequestError(
+              s"An error occurred whiles getting the followers of $userName",
+              error
+            )
+          )
 
       def getFollowersOfAUser(
           userName: String,
@@ -45,7 +57,14 @@ object TwitterService {
         twitterFollows.getUsersFollowing(userName, maxNumberOfFollowersToReturn)
 
       def getTheIdsOfTheFollowersOf(userName: String): F[FollowersIds] =
-        twitterFollows.getIdsOfUsersFollowing(userName).adaptError(GetRequestError(_))
+        twitterFollows
+          .getIdsOfUsersFollowing(userName)
+          .adaptError(
+            GetRequestError(
+              "An error occurred while getting the ids",
+              _
+            )
+          )
 
       def getUnFollowers(userName: String): F[List[Long]] =
         twitterFollows.getUnFollowersOf(userName).compile.toList
@@ -55,7 +74,12 @@ object TwitterService {
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {
         unFollowersDetails <- twitterFollows
           .getUnFollowersDetailsFor(userName)
-          .adaptError(GetRequestError(_))
+          .adaptError(
+            GetRequestError(
+              s"An error occurred whiles getting followers details for $userName",
+              _
+            )
+          )
         _ <- unFollowersDetails.data.traverse(data =>
           unFollowDataBase.twitterUnFollowers
             .storeUnFollowers(data)

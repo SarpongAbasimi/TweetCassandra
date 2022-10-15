@@ -6,30 +6,29 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.HttpRoutes
 import cats.effect.Sync
 import cats.implicits._
+import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 import models.Models.OptionalMaxResultQueryParamMatcher
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+
 import scala.util.{Failure, Success, Try}
 
 object Routes {
-  def twitterRoutes[F[_]: Sync](twitterService: TwitterServiceAlgebra[F]): HttpRoutes[F] = {
+  def twitterRoutes[F[_]: Sync](
+      twitterService: TwitterServiceAlgebra[F]
+  )(logger: SelfAwareStructuredLogger[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
       case GET -> Root / "twitter" / "user" / userName =>
         for {
-          logger              <- Slf4jLogger.create[F]
-          _                   <- logger.info("Making a GET request 🚀 to Twitter 🐦 ...")
           twitterResponseData <- twitterService.getUserByUserName(userName)
-          response <- logger.info("Request was successful 🎉 -> returning response 💭 ...") >> Ok(
-            twitterResponseData
-          )
+          response            <- Ok(twitterResponseData)
         } yield response
 
       case GET -> Root / "twitter" / "following" / userName =>
         for {
-          logger                 <- Slf4jLogger.create[F]
           listOfTwitterFollowing <- twitterService.getTheFollowingOfUser(userName)
-          _ <- logger.info("🚀 Successfully got listOfTwitterFollowing") *> logger.info(
+          _ <- logger.info(
             s"🚀 Number of Ids -> ${listOfTwitterFollowing.ids.ids.length}"
           )
           response <- Ok(listOfTwitterFollowing)

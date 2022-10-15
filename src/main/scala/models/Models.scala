@@ -77,8 +77,7 @@ object Models {
   final case class DataWithProfileImageUrl(
       id: Id,
       name: Name,
-      username: UserName,
-      profile_image_url: ProfileImageUrl
+      username: UserName
   )
 
   object DataWithProfileImageUrl {

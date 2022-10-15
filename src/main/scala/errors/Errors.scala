@@ -1,5 +1,5 @@
 package errors
 
-sealed trait Errors extends Exception with Serializable with Product
+sealed abstract class Errors(message: String, cause: Throwable) extends Throwable(message, cause)
 
-final case class GetRequestError(message: Throwable) extends Errors
+final case class GetRequestError(message: String, error: Throwable) extends Errors(message, error)
