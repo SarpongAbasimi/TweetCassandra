@@ -2,7 +2,6 @@ package services
 
 import models.Models.{
   FollowersIds,
-  FollowingIds,
   TwitterGetUserByUserNameResponseData,
   TwitterGetUserByUserNameResponseDataWithProfileUrl
 }
@@ -14,14 +13,14 @@ import errors.GetRequestError
 
 trait TwitterServiceAlgebra[F[_]] {
   def getUserByUserName(userName: String): F[TwitterGetUserByUserNameResponseData]
-  def getTheFollowingOfUser(userName: String): F[FollowingIds]
+  def getTheFollowingOfUser(userName: String): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
   def getFollowersOfAUser(
       userName: String,
       maxNumberOfFollowersToReturn: Int
   ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
-  def getTheIdsOfTheFollowersOf(userName: String): F[FollowersIds]
-  def getUnFollowers(userName: String): F[List[Long]]
-  def getUnFollowersDetails(userName: String): F[TwitterGetUserByUserNameResponseDataWithProfileUrl]
+  def getIdsOfFollowersOf(
+      userName: String
+  ): F[FollowersIds]
 }
 
 object TwitterService {
@@ -40,12 +39,14 @@ object TwitterService {
             )
           )
 
-      def getTheFollowingOfUser(userName: String): F[FollowingIds] =
+      def getTheFollowingOfUser(
+          userName: String
+      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
         twitterFollows
-          .getUsersFollowedBy(userName)
+          .getFollowingOf(userName)
           .adaptError(error =>
             GetRequestError(
-              s"An error occurred whiles getting the followers of $userName",
+              s"An error occurred whiles getting the following of $userName",
               error
             )
           )
@@ -54,36 +55,18 @@ object TwitterService {
           userName: String,
           maxNumberOfFollowersToReturn: Int
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
-        twitterFollows.getUsersFollowing(userName, maxNumberOfFollowersToReturn)
+        twitterFollows.getFollowersOf(userName, maxNumberOfFollowersToReturn)
 
-      def getTheIdsOfTheFollowersOf(userName: String): F[FollowersIds] =
+      def getIdsOfFollowersOf(
+          userName: String
+      ): F[FollowersIds] =
         twitterFollows
-          .getIdsOfUsersFollowing(userName)
+          .getFollowersIdsOf(userName)
           .adaptError(
             GetRequestError(
               "An error occurred while getting the ids",
               _
             )
           )
-
-      def getUnFollowers(userName: String): F[List[Long]] =
-        twitterFollows.getUnFollowersOf(userName).compile.toList
-
-      def getUnFollowersDetails(
-          userName: String
-      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {
-        unFollowersDetails <- twitterFollows
-          .getUnFollowersDetailsFor(userName)
-          .adaptError(
-            GetRequestError(
-              s"An error occurred whiles getting followers details for $userName",
-              _
-            )
-          )
-        _ <- unFollowersDetails.data.traverse(data =>
-          unFollowDataBase.twitterUnFollowers
-            .storeUnFollowers(data)
-        )
-      } yield unFollowersDetails
     }
 }

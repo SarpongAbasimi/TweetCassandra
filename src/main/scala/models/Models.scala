@@ -14,10 +14,10 @@ import cats.effect.Sync
 
 object Models {
 
-  final case class BaseUrl(baseUrl: String)                                 extends AnyVal
-  final case class BearerToken(bearerToken: String)                         extends AnyVal
-  final case class TwitterFollowingBaseUrl(twitterFollowingBaseUrl: String) extends AnyVal
-  final case class TwitterFollowersBaseUrl(twitterFollowersBaseUrl: String) extends AnyVal
+  final case class BaseUrl(value: String)                 extends AnyVal
+  final case class BearerToken(value: String)             extends AnyVal
+  final case class TwitterFollowingBaseUrl(value: String) extends AnyVal
+  final case class TwitterFollowersBaseUrl(value: String) extends AnyVal
   final case class TwitterConfig(
       baseUrl: BaseUrl,
       bearerToken: BearerToken,

@@ -2,18 +2,16 @@ package algebrasImplementations
 
 import models.Models.{
   FollowersIds,
-  FollowingIds,
   TwitterConfig,
   TwitterGetUserByUserNameResponseData,
   TwitterGetUserByUserNameResponseDataWithProfileUrl
 }
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+
 import org.http4s.{EntityDecoder, Headers, Request, Uri}
 import org.http4s.client.Client
 import algebras.Twitter
 import cats.effect.Sync
 import cats.implicits._
-import fs2.Stream
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 
 object TwitterFollowsImp {
@@ -23,25 +21,26 @@ object TwitterFollowsImp {
     new Twitter[F] {
       def getUserBy(userName: String): F[TwitterGetUserByUserNameResponseData] =
         clientResponseDataForType[TwitterGetUserByUserNameResponseData](
-          s"${twitterConfig.baseUrl.baseUrl}/${userName}"
+          s"${twitterConfig.baseUrl.value}/${userName}"
         )
 
-      def getUsersFollowedBy(userName: String): F[FollowingIds] = for {
-        _           <- logger.info(s"Request to get user details for ${userName}")
-        userDetails <- getUserBy(userName)
-        response <- clientResponseDataForType[FollowingIds](
-          s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}" +
-            s"/friends/ids.json?screen_name=${userDetails.data.username.username}"
-        )
-      } yield response
+      def getFollowingOf(userName: String): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] =
+        for {
+          _           <- logger.info(s"Request to get user details for ${userName}")
+          userDetails <- getUserBy(userName)
+          response <- clientResponseDataForType[TwitterGetUserByUserNameResponseDataWithProfileUrl](
+            s"${twitterConfig.twitterFollowingBaseUrl.value}" +
+              s"/${userDetails.data.id.id}/following?max_results=1000"
+          )
+        } yield response
 
-      def getUsersFollowing(
+      def getFollowersOf(
           userName: String,
           maxNumberOfFollowers: Int
       ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = for {
         user <- getUserBy(userName)
         url <- Sync[F].pure(
-          s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}" +
+          s"${twitterConfig.twitterFollowersBaseUrl.value}" +
             s"/${user.data.id.id}/followers?user.fields=profile_image_url&max_results=${maxNumberOfFollowers}"
         )
         response <- clientResponseDataForType[TwitterGetUserByUserNameResponseDataWithProfileUrl](
@@ -49,43 +48,15 @@ object TwitterFollowsImp {
         )
       } yield response
 
-      def getIdsOfUsersFollowing(userName: String): F[FollowersIds] = for {
-        user <- getUserBy(userName)
+      def getFollowersIdsOf(
+          userName: String
+      ): F[FollowersIds] = for {
+        _ <- getUserBy(userName)
         url <- Sync[F].pure(
-          s"${twitterConfig.twitterFollowingBaseUrl.twitterFollowingBaseUrl}" +
-            s"/followers/ids.json?screen_name=${user.data.username.username}"
+          s"https://api.twitter.com/1.1/followers/ids.json"
         )
         response <- clientResponseDataForType[FollowersIds](url)
       } yield response
-
-      def getUnFollowersOf(userName: String): Stream[F, Long] = for {
-        idsOfUsersFollowed <- Stream
-          .eval(getUsersFollowedBy(userName))
-          .map(_.ids.ids)
-        idsOfUsersFollowing <- Stream
-          .eval(getIdsOfUsersFollowing(userName))
-          .map(_.ids.ids)
-        response <- Stream
-          .emits(idsOfUsersFollowed)
-          .covary[F]
-          .filterNot(ids => idsOfUsersFollowing.contains(ids))
-      } yield response
-
-      def getUnFollowersDetailsFor(
-          userName: String
-      ): F[TwitterGetUserByUserNameResponseDataWithProfileUrl] = {
-        for {
-          listOfUnFollowersIds <- getUnFollowersOf(userName).compile.toList
-          url <- Sync[F].pure(
-            s"${twitterConfig.twitterFollowersBaseUrl.twitterFollowersBaseUrl}?user.fields=profile_image_url&ids=${listOfUnFollowersIds
-              .mkString(",")}"
-          )
-          response <- clientResponseDataForType[TwitterGetUserByUserNameResponseDataWithProfileUrl](
-            url
-          )
-
-        } yield response
-      }
 
       private[algebrasImplementations] def clientResponseDataForType[T](
           url: String
@@ -96,8 +67,7 @@ object TwitterFollowsImp {
             .expect[T](
               Request[F](
                 uri = uri,
-                headers =
-                  Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.bearerToken}")
+                headers = Headers("Authorization" -> s"Bearer ${twitterConfig.bearerToken.value}")
               )
             )
         } yield response

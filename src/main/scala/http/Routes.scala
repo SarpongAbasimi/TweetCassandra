@@ -1,6 +1,5 @@
 package http
 
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import services.TwitterServiceAlgebra
 import org.http4s.dsl.Http4sDsl
 import org.http4s.HttpRoutes
@@ -28,10 +27,7 @@ object Routes {
       case GET -> Root / "twitter" / "following" / userName =>
         for {
           listOfTwitterFollowing <- twitterService.getTheFollowingOfUser(userName)
-          _ <- logger.info(
-            s"🚀 Number of Ids -> ${listOfTwitterFollowing.ids.ids.length}"
-          )
-          response <- Ok(listOfTwitterFollowing)
+          response               <- Ok(listOfTwitterFollowing)
         } yield response
 
       case GET -> Root / "twitter" / "followers" / username :? OptionalMaxResultQueryParamMatcher(
@@ -45,7 +41,6 @@ object Routes {
             )
           case Some(value) =>
             for {
-              logger            <- Slf4jLogger.create[F]
               convertValueToInt <- Sync[F].delay(Try(value.optionalMaxResult.toInt))
               result <- convertValueToInt match {
                 case Failure(_) => BadRequest("Query parameter must be a number")
@@ -58,33 +53,14 @@ object Routes {
                     res <- Ok(response)
                   } yield res
               }
-              _ <- logger.info("🚀 Successful Request")
             } yield result
         }
 
       case GET -> Root / "twitter" / "followers" / "ids" / userName =>
         for {
-          logger                 <- Slf4jLogger.create[F]
-          listOfTwitterFollowing <- twitterService.getTheIdsOfTheFollowersOf(userName)
-          _ <- logger.info("🚀 Successfully got ids of listOfTwitterFollowers") *> logger.info(
-            s"🚀 Number of Ids -> ${listOfTwitterFollowing.ids.ids.length}"
-          )
-          response <- Ok(listOfTwitterFollowing)
-        } yield response
-
-      case GET -> Root / "twitter" / "unfollowers" / userName =>
-        for {
-          logger    <- Slf4jLogger.create[F]
-          listOfIds <- twitterService.getUnFollowers(userName)
-          _         <- logger.info("Getting list of unFollowers 🤦🏿‍♂️")
-          response  <- Ok(listOfIds)
-        } yield response
-
-      case GET -> Root / "twitter" / "unfollowers" / "details" / username =>
-        for {
-          logger   <- Slf4jLogger.create[F]
-          _        <- logger.info("Getting details of all unFollowers 🤙🏿 🚀 ⭐️ ")
-          response <- Ok(twitterService.getUnFollowersDetails(username))
+          listOfTwitterFollowing <- twitterService.getIdsOfFollowersOf(userName)
+          _                      <- logger.info(s"🚀 Number of Ids -> ${listOfTwitterFollowing.ids.ids.length}")
+          response               <- Ok(listOfTwitterFollowing)
         } yield response
     }
   }
